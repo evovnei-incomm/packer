@@ -1,6 +1,7 @@
 #docs -> https://docs.microsoft.com/en-us/azure/virtual-machines/windows/build-image-with-packer
 
 #code in JSON
+# Build 'azure-arm' finished after 10 minutes 60 milliseconds.
 
 {
     "builders": [{
