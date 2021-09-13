@@ -1,0 +1,47 @@
+#docs -> https://docs.microsoft.com/en-us/azure/virtual-machines/windows/build-image-with-packer
+
+#code in JSON
+
+{
+    "builders": [{
+      "type": "azure-arm",
+  
+      "client_id": "your client id",
+      "client_secret": "your client secret",
+      "tenant_id": "your tenant id",
+      "subscription_id": "your sub id",
+  
+      "managed_image_resource_group_name": "Packer-Java-WinVM",
+      "managed_image_name": "win-java01",
+  
+      "os_type": "Windows",
+      "image_publisher": "MicrosoftWindowsServer",
+      "image_offer": "WindowsServer",
+      "image_sku": "2019-Datacenter",
+  
+      "communicator": "winrm",
+      "winrm_use_ssl": true,
+      "winrm_insecure": true,
+      "winrm_timeout": "5m",
+      "winrm_username": "packer",
+  
+      "azure_tags": {
+          "dept": "Engineering",
+          "task": "Image deployment"
+      },
+  
+      "build_resource_group_name": "Packer-Java-WinVM",
+      "vm_size": "Standard_B2S"
+    }],
+    "provisioners": [{
+      "type": "powershell",
+      "inline": [
+        
+        "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))",
+        "choco install javaruntime -y",
+        
+        "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit",
+        "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"
+      ]
+    }]
+  }
